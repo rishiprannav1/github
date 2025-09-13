@@ -1,1 +1,266 @@
-changed
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Logistics Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+<div class="container mx-auto p-6 bg-white shadow-xl rounded-2xl border border-gray-200">
+    <div class="flex flex-col md:flex-row items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 text-center md:text-left mb-4 md:mb-0">
+            Secure Government Logistics
+        </h1>
+        <div class="flex items-center space-x-2">
+            <span id="network-status" class="px-3 py-1 text-sm font-semibold rounded-full">Connecting...</span>
+            <div id="loader" class="h-6 w-6 border-4 border-t-4 border-gray-200 rounded-full animate-spin border-t-indigo-500"></div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Register Item Section -->
+        <div class="p-6 bg-indigo-50 rounded-xl border border-indigo-200 transition-all duration-300 hover:shadow-lg">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Register New Item</h2>
+            <div class="mb-4">
+                <label for="itemIdInput" class="block text-sm font-medium text-gray-700">Item ID</label>
+                <input type="text" id="itemIdInput" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="e.g., GVT-001-A23">
+            </div>
+            <div class="mb-4">
+                <label for="itemDescriptionInput" class="block text-sm font-medium text-gray-700">Description</label>
+                <input type="text" id="itemDescriptionInput" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="e.g., Medical Supplies">
+            </div>
+            <button id="registerButton" class="w-full py-2 px-4 border border-transparent rounded-xl shadow-sm text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                Register Item on Blockchain
+            </button>
+        </div>
+
+        <!-- Update Location Section -->
+        <div class="p-6 bg-green-50 rounded-xl border border-green-200 transition-all duration-300 hover:shadow-lg">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Update Item Location</h2>
+            <div class="mb-4">
+                <label for="updateIdInput" class="block text-sm font-medium text-gray-700">Item ID</label>
+                <input type="text" id="updateIdInput" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition-colors" placeholder="e.g., GVT-001-A23">
+            </div>
+            <div class="mb-4">
+                <label for="newLocationInput" class="block text-sm font-medium text-gray-700">New Location</label>
+                <input type="text" id="newLocationInput" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition-colors" placeholder="e.g., Warehouse B, New York">
+            </div>
+            <button id="updateButton" class="w-full py-2 px-4 border border-transparent rounded-xl shadow-sm text-white font-medium bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                Update Location
+            </button>
+        </div>
+    </div>
+    
+    <!-- Track Item Section -->
+    <div class="mt-8 p-6 bg-orange-50 rounded-xl border border-orange-200 transition-all duration-300 hover:shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800">Track Item History</h2>
+        <div class="mb-4">
+            <label for="trackIdInput" class="block text-sm font-medium text-gray-700">Item ID</label>
+            <input type="text" id="trackIdInput" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 transition-colors" placeholder="e.g., GVT-001-A23">
+        </div>
+        <button id="trackButton" class="w-full py-2 px-4 border border-transparent rounded-xl shadow-sm text-white font-medium bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            Track Item
+        </button>
+        
+        <div id="historyOutput" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 overflow-auto max-h-80">
+            <p class="text-gray-500 text-sm">Item history will appear here.</p>
+        </div>
+    </div>
+
+    <!-- Status Messages -->
+    <div id="status-message" class="mt-8 p-4 rounded-xl border hidden"></div>
+</div>
+
+<script>
+    // This is a simplified example. In a real-world dApp, you would need
+    // a running Ethereum node (like Ganache or a testnet) and a
+    // Web3 provider (like MetaMask). This code simulates the blockchain
+    // interactions for demonstration purposes.
+
+    // === BEGIN SIMULATED BLOCKCHAIN ===
+    const blockchain = {};
+    const STATUS_MAP = {
+        '0': 'Pending',
+        '1': 'In Transit',
+        '2': 'Delivered',
+        '3': 'Received by Agency'
+    };
+
+    function simulateTransaction(callback) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                callback();
+                resolve();
+            }, 1500); // Simulate network latency and block confirmation time
+        });
+    }
+
+    // A simplified smart contract object with its methods
+    const contract = {
+        // Simulates a mapping in Solidity
+        items: {},
+        // Simulates an enum in Solidity
+        ItemStatus: {
+            Pending: 0,
+            InTransit: 1,
+            Delivered: 2,
+            ReceivedByAgency: 3
+        },
+        
+        // Simulates the registerItem function
+        registerItem: async function(id, description) {
+            if (this.items[id]) {
+                throw new Error("Item with this ID already exists.");
+            }
+            await simulateTransaction(() => {
+                this.items[id] = {
+                    id: id,
+                    description: description,
+                    status: this.ItemStatus.Pending,
+                    history: [{ timestamp: Date.now(), location: "Registration", status: "Pending" }]
+                };
+            });
+            return { transactionHash: `0x${Math.random().toString(16).slice(2)}` };
+        },
+
+        // Simulates the updateLocation function
+        updateLocation: async function(id, newLocation, newStatus) {
+            if (!this.items[id]) {
+                throw new Error("Item not found.");
+            }
+            await simulateTransaction(() => {
+                this.items[id].location = newLocation;
+                this.items[id].status = newStatus;
+                this.items[id].history.push({ timestamp: Date.now(), location: newLocation, status: STATUS_MAP[newStatus] });
+            });
+            return { transactionHash: `0x${Math.random().toString(16).slice(2)}` };
+        },
+
+        // Simulates the trackItem function
+        trackItem: async function(id) {
+            if (!this.items[id]) {
+                throw new Error("Item not found.");
+            }
+            // Simulates a view function that doesn't require a transaction
+            return this.items[id].history;
+        }
+    };
+    // === END SIMULATED BLOCKCHAIN ===
+
+    // === UI ELEMENTS & EVENT LISTENERS ===
+    const registerButton = document.getElementById('registerButton');
+    const updateButton = document.getElementById('updateButton');
+    const trackButton = document.getElementById('trackButton');
+    const historyOutput = document.getElementById('historyOutput');
+    const statusMessage = document.getElementById('status-message');
+    const networkStatus = document.getElementById('network-status');
+    const loader = document.getElementById('loader');
+
+    // Show initial connection status
+    setTimeout(() => {
+        networkStatus.textContent = 'Connected';
+        networkStatus.classList.remove('bg-gray-300', 'text-gray-800');
+        networkStatus.classList.add('bg-green-100', 'text-green-800');
+        loader.classList.add('hidden');
+    }, 1000);
+
+    function showStatus(message, type = 'info') {
+        statusMessage.textContent = message;
+        statusMessage.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800', 'bg-blue-100', 'text-blue-800');
+        if (type === 'error') {
+            statusMessage.classList.add('bg-red-100', 'text-red-800');
+        } else if (type === 'success') {
+            statusMessage.classList.add('bg-green-100', 'text-green-800');
+        } else {
+            statusMessage.classList.add('bg-blue-100', 'text-blue-800');
+        }
+        statusMessage.style.display = 'block';
+    }
+
+    // Register Item Logic
+    registerButton.addEventListener('click', async () => {
+        const itemId = document.getElementById('itemIdInput').value;
+        const description = document.getElementById('itemDescriptionInput').value;
+        if (!itemId || !description) {
+            showStatus("Please enter both Item ID and Description.", 'error');
+            return;
+        }
+        try {
+            showStatus("Registering item on the blockchain...", 'info');
+            const tx = await contract.registerItem(itemId, description);
+            showStatus(`Item "${itemId}" registered successfully! Transaction Hash: ${tx.transactionHash}`, 'success');
+        } catch (error) {
+            showStatus(`Error: ${error.message}`, 'error');
+        }
+    });
+
+    // Update Location Logic
+    updateButton.addEventListener('click', async () => {
+        const updateId = document.getElementById('updateIdInput').value;
+        const newLocation = document.getElementById('newLocationInput').value;
+        if (!updateId || !newLocation) {
+            showStatus("Please enter both Item ID and a new location.", 'error');
+            return;
+        }
+        try {
+            // Randomly select a new status to show progression
+            const newStatus = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
+            showStatus("Updating item location...", 'info');
+            const tx = await contract.updateLocation(updateId, newLocation, newStatus);
+            showStatus(`Item "${updateId}" location updated successfully! Transaction Hash: ${tx.transactionHash}`, 'success');
+        } catch (error) {
+            showStatus(`Error: ${error.message}`, 'error');
+        }
+    });
+
+    // Track Item Logic
+    trackButton.addEventListener('click', async () => {
+        const trackId = document.getElementById('trackIdInput').value;
+        if (!trackId) {
+            showStatus("Please enter an Item ID to track.", 'error');
+            return;
+        }
+        try {
+            showStatus("Fetching item history from the blockchain...", 'info');
+            const history = await contract.trackItem(trackId);
+            historyOutput.innerHTML = ''; // Clear previous history
+            
+            const historyTitle = document.createElement('h3');
+            historyTitle.classList.add('text-lg', 'font-semibold', 'mb-2', 'text-gray-800');
+            historyTitle.textContent = `History for Item: ${trackId}`;
+            historyOutput.appendChild(historyTitle);
+            
+            history.forEach(entry => {
+                const historyEntry = document.createElement('div');
+                historyEntry.classList.add('mb-2', 'p-3', 'bg-white', 'rounded-lg', 'border', 'border-gray-200', 'shadow-sm', 'hover:bg-gray-100', 'transition-colors');
+                const timestamp = new Date(entry.timestamp).toLocaleString();
+                historyEntry.innerHTML = `
+                    <p class="font-medium text-gray-700">Location: <span class="text-gray-900">${entry.location}</span></p>
+                    <p class="text-xs text-gray-500">Status: <span class="font-semibold text-gray-700">${entry.status}</span></p>
+                    <p class="text-xs text-gray-400">Timestamp: ${timestamp}</p>
+                `;
+                historyOutput.appendChild(historyEntry);
+            });
+            showStatus("History fetched successfully.", 'success');
+        } catch (error) {
+            showStatus(`Error: ${error.message}`, 'error');
+        }
+    });
+</script>
+
+</body>
+</html>
